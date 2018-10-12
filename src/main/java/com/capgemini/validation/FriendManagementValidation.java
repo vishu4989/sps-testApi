@@ -18,14 +18,15 @@ public class FriendManagementValidation {
 		this.status = status;
 	}
 
-	public String getErrorDescription() {
+	
+	public String getDescription() {
 		return description;
 	}
 
-	public void setErrorDescription(String description) {
+	public void setDescription(String description) {
 		this.description = description;
 	}
-	
+
 	public FriendManagementValidation() {
 		
 	}

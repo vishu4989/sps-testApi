@@ -142,3 +142,51 @@ SELECT subscriber FROM friendmanagement WHERE email=? [42122-197]
 2018-10-12 17:28:33 [RMI TCP Connection(2)-127.0.0.1] INFO  o.s.j.e.a.AnnotationMBeanExporter - Unregistering JMX-exposed beans
 2018-10-12 17:28:33 [RMI TCP Connection(2)-127.0.0.1] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
 2018-10-12 17:28:33 [RMI TCP Connection(2)-127.0.0.1] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2018-10-12 19:57:02 [main] INFO  com.capgemini.SpsDemoApplication - Starting SpsDemoApplication on LIN40000108 with PID 20260 (C:\Users\vishwman\SPSTestWorkspace\SPS-DEMO\target\classes started by vishwman in C:\Users\vishwman\SPSTestWorkspace\SPS-DEMO)
+2018-10-12 19:57:02 [main] INFO  com.capgemini.SpsDemoApplication - The following profiles are active: swagger-enabled-for-qa
+2018-10-12 19:57:02 [main] INFO  o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext - Refreshing org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@4690b489: startup date [Fri Oct 12 19:57:02 IST 2018]; root of context hierarchy
+2018-10-12 19:57:03 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$46d8567f] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2018-10-12 19:57:03 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8086 (http)
+2018-10-12 19:57:03 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2018-10-12 19:57:03 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet Engine: Apache Tomcat/8.5.34
+2018-10-12 19:57:03 [localhost-startStop-1] INFO  o.a.c.core.AprLifecycleListener - The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: [C:\Program Files\Java\jre1.8.0_161\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:/Program Files/Java/jre1.8.0_161/bin/server;C:/Program Files/Java/jre1.8.0_161/bin;C:/Program Files/Java/jre1.8.0_161/lib/amd64;C:\ProgramData\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\Program Files (x86)\QuickTime\QTSystem\;C:\Program Files\CapgeminiScripts\Support Tools\;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Users\vishwman\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Java\jdk1.8.0_161\bin;C:\Users\vishwman\AppData\Roaming\npm\node_modules\@angular\cli\bin;C:\Users\vishwman\AppData\Roaming\npm;C:\Users\vishwman\Downloads\spring-tool-suite-3.9.6.RELEASE-e4.9.0-win32-x86_64\sts-bundle\sts-3.9.6.RELEASE;;.]
+2018-10-12 19:57:03 [localhost-startStop-1] INFO  o.a.c.c.C.[.[localhost].[/friendmgt] - Initializing Spring embedded WebApplicationContext
+2018-10-12 19:57:03 [localhost-startStop-1] INFO  o.s.b.w.s.ServletRegistrationBean - Servlet dispatcherServlet mapped to [/]
+2018-10-12 19:57:03 [localhost-startStop-1] INFO  o.s.b.w.s.ServletRegistrationBean - Servlet webServlet mapped to [/h2/*]
+2018-10-12 19:57:03 [localhost-startStop-1] INFO  o.s.b.w.s.FilterRegistrationBean - Mapping filter: 'characterEncodingFilter' to: [/*]
+2018-10-12 19:57:03 [localhost-startStop-1] INFO  o.s.b.w.s.FilterRegistrationBean - Mapping filter: 'hiddenHttpMethodFilter' to: [/*]
+2018-10-12 19:57:03 [localhost-startStop-1] INFO  o.s.b.w.s.FilterRegistrationBean - Mapping filter: 'httpPutFormContentFilter' to: [/*]
+2018-10-12 19:57:03 [localhost-startStop-1] INFO  o.s.b.w.s.FilterRegistrationBean - Mapping filter: 'requestContextFilter' to: [/*]
+2018-10-12 19:57:03 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2018-10-12 19:57:03 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2018-10-12 19:57:03 [main] INFO  o.s.jdbc.datasource.init.ScriptUtils - Executing SQL script from URL [file:/C:/Users/vishwman/SPSTestWorkspace/SPS-DEMO/target/classes/schema.sql]
+2018-10-12 19:57:03 [main] INFO  o.s.jdbc.datasource.init.ScriptUtils - Executed SQL script from URL [file:/C:/Users/vishwman/SPSTestWorkspace/SPS-DEMO/target/classes/schema.sql] in 16 ms.
+2018-10-12 19:57:03 [main] INFO  o.s.jdbc.datasource.init.ScriptUtils - Executing SQL script from URL [file:/C:/Users/vishwman/SPSTestWorkspace/SPS-DEMO/target/classes/data.sql]
+2018-10-12 19:57:03 [main] INFO  o.s.jdbc.datasource.init.ScriptUtils - Executed SQL script from URL [file:/C:/Users/vishwman/SPSTestWorkspace/SPS-DEMO/target/classes/data.sql] in 15 ms.
+2018-10-12 19:57:04 [main] INFO  o.s.j.e.a.AnnotationMBeanExporter - Registering beans for JMX exposure on startup
+2018-10-12 19:57:04 [main] INFO  o.s.j.e.a.AnnotationMBeanExporter - Bean with name 'dataSource' has been autodetected for JMX exposure
+2018-10-12 19:57:04 [main] INFO  o.s.j.e.a.AnnotationMBeanExporter - Located MBean 'dataSource': registering with JMX server as MBean [com.zaxxer.hikari:name=dataSource,type=HikariDataSource]
+2018-10-12 19:57:04 [main] INFO  s.d.s.w.p.DocumentationPluginsBootstrapper - Context refreshed
+2018-10-12 19:57:04 [main] INFO  s.d.s.w.p.DocumentationPluginsBootstrapper - Found 1 custom documentation plugin(s)
+2018-10-12 19:57:04 [main] INFO  s.d.s.w.s.ApiListingReferenceScanner - Scanning for api listing references
+2018-10-12 19:57:05 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port(s): 8086 (http) with context path '/friendmgt'
+2018-10-12 19:57:05 [main] INFO  com.capgemini.SpsDemoApplication - Started SpsDemoApplication in 3.34 seconds (JVM running for 4.509)
+2018-10-12 19:58:07 [main] INFO  c.c.c.FriendManagementControllerTest - Starting FriendManagementControllerTest on LIN40000108 with PID 20520 (started by vishwman in C:\Users\vishwman\SPSTestWorkspace\SPS-DEMO)
+2018-10-12 19:58:07 [main] INFO  c.c.c.FriendManagementControllerTest - The following profiles are active: swagger-enabled-for-qa
+2018-10-12 19:58:09 [main] INFO  o.s.c.s.PostProcessorRegistrationDelegate$BeanPostProcessorChecker - Bean 'org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration' of type [org.springframework.transaction.annotation.ProxyTransactionManagementConfiguration$$EnhancerBySpringCGLIB$$fe68d44] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying)
+2018-10-12 19:58:09 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2018-10-12 19:58:10 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2018-10-12 19:58:10 [main] INFO  o.s.jdbc.datasource.init.ScriptUtils - Executing SQL script from URL [file:/C:/Users/vishwman/SPSTestWorkspace/SPS-DEMO/target/classes/schema.sql]
+2018-10-12 19:58:10 [main] INFO  o.s.jdbc.datasource.init.ScriptUtils - Executed SQL script from URL [file:/C:/Users/vishwman/SPSTestWorkspace/SPS-DEMO/target/classes/schema.sql] in 47 ms.
+2018-10-12 19:58:10 [main] INFO  o.s.jdbc.datasource.init.ScriptUtils - Executing SQL script from URL [file:/C:/Users/vishwman/SPSTestWorkspace/SPS-DEMO/target/classes/data.sql]
+2018-10-12 19:58:10 [main] INFO  o.s.jdbc.datasource.init.ScriptUtils - Executed SQL script from URL [file:/C:/Users/vishwman/SPSTestWorkspace/SPS-DEMO/target/classes/data.sql] in 16 ms.
+2018-10-12 19:58:12 [main] INFO  s.d.s.w.p.DocumentationPluginsBootstrapper - Context refreshed
+2018-10-12 19:58:12 [main] INFO  s.d.s.w.p.DocumentationPluginsBootstrapper - Found 1 custom documentation plugin(s)
+2018-10-12 19:58:12 [main] INFO  s.d.s.w.s.ApiListingReferenceScanner - Scanning for api listing references
+2018-10-12 19:58:12 [main] INFO  c.c.c.FriendManagementControllerTest - Started FriendManagementControllerTest in 5.231 seconds (JVM running for 7.05)
+2018-10-12 19:58:13 [main] INFO  c.c.c.FriendManagementController - --getFriendList :: ranga@gmail.com
+2018-10-12 19:58:13 [main] INFO  c.c.c.FriendManagementController - newFriendConnection :: 
+2018-10-12 19:58:13 [main] INFO  c.c.c.FriendManagementController - getCommonFriendList
+2018-10-12 19:58:13 [main] INFO  c.c.c.FriendManagementController - subscribeFriend ::
+2018-10-12 19:58:13 [Thread-2] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2018-10-12 19:58:13 [Thread-2] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
