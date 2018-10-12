@@ -20,8 +20,7 @@ public class FrientMangmtService {
 		this.friendMangmtRepo=friendMangmtRepo;
 	} 
 
-	public FriendManagementValidation addNewFriendConnection(com.capgemini.model.UserRequest userReq) {
-		System.out.println("-------333333-------------");
+	public FriendManagementValidation addNewFriendConnection(com.capgemini.model.UserRequest userReq)throws ResourceNotFoundException {
 		//boolean flag = friendMangmtRepo.addNewFriendConnection(userReq);
 		FriendManagementValidation fmResponse = friendMangmtRepo.addNewFriendConnection(userReq);
 		return fmResponse;
@@ -29,7 +28,7 @@ public class FrientMangmtService {
 
 	public FriendManagementValidation subscribeTargetFriend(com.capgemini.model.Subscriber subscriber)throws ResourceNotFoundException {
 
-		//System.out.println("-------2222-------------");
+		
 		return friendMangmtRepo.subscribeTargetFriend(subscriber);
 
 	}
