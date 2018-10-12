@@ -59,7 +59,7 @@ public class FriendManagementControllerTest {
 		commonFriendsListResponse = new CommonFriendsListResponse();
 		userFriendsListResponse = new UserFriendsListResponse();
 	}
-	
+
 	@Test
 	public void test_getFriendList_success() throws ResourceNotFoundException {
 		friendListRequest.setEmail("ranga@gmail.com");
@@ -70,5 +70,82 @@ public class FriendManagementControllerTest {
 		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 	}
 
-	
+	@Test
+	public void test_null_requestor_unsubscribe() throws ResourceNotFoundException {
+		subscriber.setTarget("ravi@gmail.com");
+		subscriber.setRequestor(null);
+		when(this.result.hasErrors()).thenReturn(false);
+		ResponseEntity<FriendManagementValidation> responseEntity = friendManagementController
+				.unSubscribeFriend(subscriber, result);
+		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.BAD_REQUEST);
+	}
+
+	@Test
+	public void test_null_subscriber_unsubscribe() throws ResourceNotFoundException {
+		when(this.result.hasErrors()).thenReturn(false);
+		subscriber.setRequestor("ravi@gmail.com");
+		subscriber.setTarget(null);
+		ResponseEntity<FriendManagementValidation> responseEntity = friendManagementController
+				.unSubscribeFriend(subscriber, result);
+		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.BAD_REQUEST);
+	}
+
+	@Test
+	public void test_samesubreq_unsubscribe() throws ResourceNotFoundException {
+		subscriber.setRequestor("ravi@gmail.com");
+		subscriber.setTarget("ravi@gmail.com");
+		when(this.result.hasErrors()).thenReturn(false);
+		ResponseEntity<FriendManagementValidation> responseEntity = friendManagementController
+				.unSubscribeFriend(subscriber, result);
+		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.BAD_REQUEST);
+	}
+
+	@Test
+	public void test_unSubscribe_success() throws ResourceNotFoundException {
+		subscriber.setRequestor("ravi@gmail.com");
+		subscriber.setTarget("arvi@gmail.com");
+		when(this.result.hasErrors()).thenReturn(false);
+		List<Object> obj = new ArrayList<Object>();
+		fmError.setStatus("Success");
+		when(frndMngtServc.unSubscribeTargetFriend(subscriber)).thenReturn(fmError);
+		ResponseEntity<FriendManagementValidation> responseEntity = friendManagementController
+				.unSubscribeFriend(subscriber, result);
+		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+	}
+
+	@Test
+	public void test_addFriend_success() throws ResourceNotFoundException {
+		fmError.setStatus("Success");
+		userRequest.setRequestor("raga@gmail.com");
+		userRequest.setTarget("raju@gmail.com");
+		when(frndMngtServc.addNewFriendConnection(userRequest)).thenReturn(fmError);
+		ResponseEntity<FriendManagementValidation> responseEntity = friendManagementController
+				.newFriendConnection(userRequest, bindingResult);
+		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+	}
+
+	@Test
+	public void test_getCommonFriendList_success() throws ResourceNotFoundException {
+		List<String> friends = new ArrayList<String>();
+		friends.add("ranga@gmail.com");
+		friends.add("ranga1@gmail.com");
+		commonFriendsListRequest.setFriends(friends);
+		commonFriendsListResponse.setStatus("Success");
+		when(frndMngtServc.RetrieveCommonFriendList("ranga@gmail.com", "ranga1@gmail.com"))
+				.thenReturn(commonFriendsListResponse);
+		ResponseEntity<CommonFriendsListResponse> responseEntity = friendManagementController
+				.getCommonFriendList(commonFriendsListRequest);
+		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+	}
+
+	@Test
+	public void test_subscribe_success() throws ResourceNotFoundException {
+		subscriber.setRequestor("ravi@gmail.com");
+		subscriber.setTarget("arvi@gmail.com");
+		fmError.setStatus("Success");
+		when(frndMngtServc.subscribeTargetFriend(subscriber)).thenReturn(fmError);
+		ResponseEntity<FriendManagementValidation> responseEntity = friendManagementController
+				.subscribeFriend(subscriber, bindingResult);
+		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+	}
 }
