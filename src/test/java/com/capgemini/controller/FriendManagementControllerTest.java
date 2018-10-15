@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.validation.BindingResult;
+import static com.capgemini.config.FriendManagementConstants.*;
 import com.capgemini.exceptionhandling.ResourceNotFoundException;
 import com.capgemini.model.CommonFriendsListRequest;
 import com.capgemini.model.CommonFriendsListResponse;
@@ -63,7 +64,7 @@ public class FriendManagementControllerTest {
 	@Test
 	public void test_getFriendList_success() throws ResourceNotFoundException {
 		friendListRequest.setEmail("ranga@gmail.com");
-		userFriendsListResponse.setStatus("Success");
+		userFriendsListResponse.setStatus(FRIENDMANAGEMENT_SUCCESS);
 		when(frndMngtServc.getFriendList(friendListRequest)).thenReturn(userFriendsListResponse);
 		ResponseEntity<UserFriendsListResponse> responseEntity = friendManagementController
 				.getFriendList(friendListRequest, bindingResult);
@@ -106,7 +107,7 @@ public class FriendManagementControllerTest {
 		subscriber.setTarget("arvi@gmail.com");
 		when(this.result.hasErrors()).thenReturn(false);
 		List<Object> obj = new ArrayList<Object>();
-		fmError.setStatus("Success");
+		fmError.setStatus(FRIENDMANAGEMENT_SUCCESS);
 		when(frndMngtServc.unSubscribeTargetFriend(subscriber)).thenReturn(fmError);
 		ResponseEntity<FriendManagementValidation> responseEntity = friendManagementController
 				.unSubscribeFriend(subscriber, result);
@@ -115,7 +116,7 @@ public class FriendManagementControllerTest {
 
 	@Test
 	public void test_addFriend_success() throws ResourceNotFoundException {
-		fmError.setStatus("Success");
+		fmError.setStatus(FRIENDMANAGEMENT_SUCCESS);
 		userRequest.setRequestor("raga@gmail.com");
 		userRequest.setTarget("raju@gmail.com");
 		when(frndMngtServc.addNewFriendConnection(userRequest)).thenReturn(fmError);
@@ -130,7 +131,7 @@ public class FriendManagementControllerTest {
 		friends.add("ranga@gmail.com");
 		friends.add("ranga1@gmail.com");
 		commonFriendsListRequest.setFriends(friends);
-		commonFriendsListResponse.setStatus("Success");
+		commonFriendsListResponse.setStatus(FRIENDMANAGEMENT_SUCCESS);
 		when(frndMngtServc.RetrieveCommonFriendList("ranga@gmail.com", "ranga1@gmail.com"))
 				.thenReturn(commonFriendsListResponse);
 		ResponseEntity<CommonFriendsListResponse> responseEntity = friendManagementController
@@ -140,9 +141,9 @@ public class FriendManagementControllerTest {
 
 	@Test
 	public void test_subscribe_success() throws ResourceNotFoundException {
-		subscriber.setRequestor("ravi@gmail.com");
+		subscriber.setRequestor("ravi@example.com");
 		subscriber.setTarget("arvi@gmail.com");
-		fmError.setStatus("Success");
+		fmError.setStatus(FRIENDMANAGEMENT_SUCCESS);
 		when(frndMngtServc.subscribeTargetFriend(subscriber)).thenReturn(fmError);
 		ResponseEntity<FriendManagementValidation> responseEntity = friendManagementController
 				.subscribeFriend(subscriber, bindingResult);

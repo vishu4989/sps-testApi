@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
+import static com.capgemini.config.FriendManagementConstants.*;
 import com.capgemini.exceptionhandling.ResourceNotFoundException;
 //import com.capgemini.model.BaseResponse;
 import com.capgemini.model.CommonFriendsListResponse;
@@ -24,10 +24,7 @@ import com.capgemini.model.UserFriendsListResponse;
 import com.capgemini.service.FrientMangmtService;
 import com.capgemini.validation.FriendManagementValidation;
 
-/**
- * @author vishwman
- *
- */
+
 @RestController
 @Validated
 @EntityScan(basePackages = { "com.capgemini.entity" })
@@ -36,7 +33,7 @@ public class FriendManagementController {
 
 	private final Logger LOG = LoggerFactory.getLogger(getClass());
 	private final String sharedKey = "SHARED_KEY";
-	private static final String SUCCESS_STATUS = "Success";
+	private static final String SUCCESS_STATUS = FRIENDMANAGEMENT_SUCCESS;
 	private static final String ERROR_STATUS = "error";
 	private static final int CODE_SUCCESS = 100;
 	private static final int AUTH_FAILURE = 102;
@@ -68,7 +65,7 @@ public class FriendManagementController {
 
 			// LOG.info("newFriendConnection :: "+isNewfrndMangmReqSuccess);
 
-			if (isNewfrndMangmReqSuccess.equalsIgnoreCase("Success")) {
+			if (isNewfrndMangmReqSuccess.equalsIgnoreCase(FRIENDMANAGEMENT_SUCCESS)) {
 				fmResponse.setStatus(SUCCESS_STATUS);
 				// response.setCode(CODE_SUCCESS);
 				re = new ResponseEntity<FriendManagementValidation>(fmResponse, HttpStatus.OK);
@@ -154,7 +151,7 @@ public class FriendManagementController {
 	 * @return
 	 * @throws ResourceNotFoundException
 	 */
-	@RequestMapping(value = "/subscribe", method = RequestMethod.PUT)
+	@RequestMapping(value = "/subscribe", method = RequestMethod.POST)
 	public ResponseEntity<FriendManagementValidation> subscribeFriend(
 			@Valid @RequestBody com.capgemini.model.Subscriber subscriber, BindingResult result)
 			throws ResourceNotFoundException {
@@ -186,7 +183,7 @@ public class FriendManagementController {
 	/**
 	 * 
 	 */
-	@RequestMapping(value = "/unsubscribe", method = RequestMethod.PUT)
+	@RequestMapping(value = "/unsubscribe", method = RequestMethod.POST)
 	public ResponseEntity<FriendManagementValidation> unSubscribeFriend(
 			@Valid @RequestBody com.capgemini.model.Subscriber subscriber, BindingResult result)
 			throws ResourceNotFoundException {
@@ -224,7 +221,7 @@ public class FriendManagementController {
 		return true;
 	}
 
-	@RequestMapping(value = "/friends/updatelist", method = RequestMethod.PUT)
+	@RequestMapping(value = "/friends/updatelist", method = RequestMethod.POST)
 	public ResponseEntity<EmailsListRecievesUpdatesResponse> emailListRecievesupdates(
 			@Valid @RequestBody com.capgemini.model.EmailsListRecievesUpdatesRequest emailsList, BindingResult result)
 			throws ResourceNotFoundException {
@@ -261,7 +258,7 @@ public class FriendManagementController {
 	 * @return
 	 */
 	private ResponseEntity<FriendManagementValidation> handleValidation(BindingResult result) {
-		fmError.setStatus("Failed");
+		fmError.setStatus(FRIENDMANAGEMENT_FAILED);
 		if (result.getFieldError("requestor") != null && result.getFieldError("target") != null) {
 			fmError.setDescription(result.getFieldError("requestor").getDefaultMessage() + " "
 					+ result.getFieldError("target").getDefaultMessage());

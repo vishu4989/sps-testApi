@@ -1,5 +1,6 @@
 package com.capgemini.repository;
 
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,6 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import static com.capgemini.config.FriendManagementConstants.*;
 import com.capgemini.exceptionhandling.ResourceNotFoundException;
 import com.capgemini.model.CommonFriendsListResponse;
 import com.capgemini.model.EmailsListRecievesUpdatesResponse;
@@ -26,12 +28,14 @@ import com.capgemini.validation.FriendManagementValidation;
 @Repository
 public class FriendMangmtRepo {
 	private final Logger LOG = LoggerFactory.getLogger(getClass());
-
+	
 	@Autowired
 	FriendManagementValidation friendMgmtValidation;
 
 	@Autowired
 	JdbcTemplate jdbcTemplate;
+	@Autowired
+	FriendManagementHelper friendManagementHelper;
 
 	@Autowired
 	public FriendMangmtRepo(FriendManagementValidation fmError,JdbcTemplate jdbcTemplate){
@@ -55,45 +59,43 @@ public class FriendMangmtRepo {
 			String target = userReq.getTarget();
 
 
-			String query = "SELECT email FROM friendmanagement";
-
-			List<String> emails = jdbcTemplate.queryForList(query, String.class);
-			friendMgmtValidation.setStatus("Success");
-			friendMgmtValidation.setDescription("Successfully connected");
+			List<String> emails = friendManagementHelper.getListOfAllEmails(); 
+			friendMgmtValidation.setStatus(FRIENDMANAGEMENT_SUCCESS);
+			friendMgmtValidation.setDescription(FRIENDMANAGEMENT_SUCCESSFULLY_CONNECTED);
 			if(requestor.equals(target)) {
-				friendMgmtValidation.setStatus("Failed");
-				friendMgmtValidation.setDescription("Requestor and target should not be same");
+				friendMgmtValidation.setStatus(FRIENDMANAGEMENT_FAILED);
+				friendMgmtValidation.setDescription(FRIENDMANAGEMENT_EMAIL_SAME);
 				return friendMgmtValidation;
 			}
 
 			if (emails.contains(requestor) && emails.contains(target)) {
 
-				boolean isBlocked = isBlocked(requestor, target);
+				boolean isBlocked = friendManagementHelper.isBlocked(requestor, target);
 				if (!isBlocked) {
-					if (isAlreadyFriend(requestor, target)) {
-						friendMgmtValidation.setStatus("Failed");
-						friendMgmtValidation.setDescription("Already friends");
+					if (friendManagementHelper.isAlreadyFriend(requestor, target)) {
+						friendMgmtValidation.setStatus(FRIENDMANAGEMENT_FAILED);
+						friendMgmtValidation.setDescription(FRIENDMANAGEMENT_ALREADY_FRIEND);
 					} else {
-						connectFriend(requestor, target);
-						connectFriend(target, requestor);
+						friendManagementHelper.connectFriend(requestor, target);
+						friendManagementHelper.connectFriend(target, requestor);
 					}
 				} else {
-					friendMgmtValidation.setStatus("Failed");
-					friendMgmtValidation.setDescription("target blocked");
+					friendMgmtValidation.setStatus(FRIENDMANAGEMENT_FAILED);
+					friendMgmtValidation.setDescription(FRIENDMANAGEMENT_TARGET_BLOCKED);
 				}
 			}else if(!emails.contains(requestor) && !emails.contains(target)) {
-				insertEmail(requestor);   
-				insertEmail(target);
-				connectFriend(requestor, target);
-				connectFriend(target, requestor);
+				friendManagementHelper.insertEmail(requestor);   
+				friendManagementHelper.insertEmail(target);
+				friendManagementHelper.connectFriend(requestor, target);
+				friendManagementHelper.connectFriend(target, requestor);
 			} else if (emails.contains(requestor)) {
-				insertEmail(target);
-				connectFriend(requestor, target);
-				connectFriend(target, requestor);
+				friendManagementHelper.insertEmail(target);
+				friendManagementHelper.connectFriend(requestor, target);
+				friendManagementHelper.connectFriend(target, requestor);
 			} else {
-				insertEmail(requestor);
-				connectFriend(requestor, target);
-				connectFriend(target, requestor);
+				friendManagementHelper.insertEmail(requestor);
+				friendManagementHelper.connectFriend(requestor, target);
+				friendManagementHelper.connectFriend(target, requestor);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -105,7 +107,7 @@ public class FriendMangmtRepo {
 
 
 	/**
-	 * This API is invoked to get the list of all the friends connected to requestor friend
+	 * This API is invoked to get the list of all the friends connected to requester friend
 	 * @param email
 	 * @return
 	 * @throws ResourceNotFoundException
@@ -114,22 +116,28 @@ public class FriendMangmtRepo {
 
 		UserFriendsListResponse emailListresponse = new UserFriendsListResponse();
 		LOG.info("----getFriendList-----"+friendListRequest.getEmail());
-		String friendList = getFriendList(friendListRequest.getEmail());
+		List<String> emails = friendManagementHelper.getListOfAllEmails();
+		if(emails.contains(friendListRequest.getEmail())) {
+		String friendList = friendManagementHelper.getFriendList(friendListRequest.getEmail());
 		if ("".equals(friendList) || friendList==null) {
-			emailListresponse.setStatus("Failed");
+			emailListresponse.setStatus(FRIENDMANAGEMENT_FAILED);
 			emailListresponse.setCount(0);
 		} else {
 			String[] friendListQueryParam = friendList.split(",");
-			List<String> friends = getEmailByIds(Arrays.asList(friendListQueryParam));
+			List<String> friends = friendManagementHelper.getEmailByIds(Arrays.asList(friendListQueryParam));
 			if(friends.size()==0) {
 
 			}else {
-				emailListresponse.setStatus("Success");
+				emailListresponse.setStatus(FRIENDMANAGEMENT_SUCCESS);
 				emailListresponse.setCount(friends.size());
 				for (String friend : friends) {
 					emailListresponse.getFriends().add(friend);
 				}
 			}
+		}
+		
+		}else {
+			emailListresponse.setStatus(FRIENDMANAGEMENT_FAILED);
 		}
 		return emailListresponse;
 
@@ -144,9 +152,10 @@ public class FriendMangmtRepo {
 	 */
 	public CommonFriendsListResponse retrieveCommonFriendList(String email1 ,String email2)throws ResourceNotFoundException{
 		CommonFriendsListResponse commonFrndListresponse = new CommonFriendsListResponse();
-
-		String friendList1 = getFriendList(email1);
-		String friendList2 = getFriendList(email2);
+		List<String> emails =friendManagementHelper.getListOfAllEmails();
+		if(emails.contains(email1) && emails.contains(email2)) {
+		String friendList1 = friendManagementHelper.getFriendList(email1);
+		String friendList2 = friendManagementHelper.getFriendList(email2);
 		String[] friendList1Container = friendList1.split(",");
 		String[] friendList2Container = friendList2.split(",");
 
@@ -154,15 +163,18 @@ public class FriendMangmtRepo {
 		Set<String> friend2Set = new HashSet<String>(Arrays.asList(friendList2Container));
 		friend1Set.retainAll(friend2Set);
 
-		List<String> friends = getEmailByIds(new ArrayList<String>(friend1Set));
+		List<String> friends = friendManagementHelper.getEmailByIds(new ArrayList<String>(friend1Set));
 		if(friends.size() == 0) {
 
 		}else {
-			commonFrndListresponse.setStatus("success");
+			commonFrndListresponse.setStatus(FRIENDMANAGEMENT_SUCCESS);
 			commonFrndListresponse.setCount(friends.size());
 			for (String friend : friends) {
 				commonFrndListresponse.getFriends().add(friend);
 			}}
+		}else {
+			commonFrndListresponse.setStatus(FRIENDMANAGEMENT_FAILED);
+		}
 		return commonFrndListresponse;
 	} 
 
@@ -180,25 +192,24 @@ public class FriendMangmtRepo {
 		String requestor = subscriber.getRequestor();
 		String target = subscriber.getTarget();
 
-		String query = "SELECT email FROM friendmanagement";
-		List<String> emails = jdbcTemplate.queryForList(query, String.class);
+		List<String> emails = friendManagementHelper.getListOfAllEmails(); 
 
 		if(requestor.equals(target)) {
-			friendMgmtValidation.setStatus("Failed");
-			friendMgmtValidation.setDescription("Requestor and target should not be same");
+			friendMgmtValidation.setStatus(FRIENDMANAGEMENT_FAILED);
+			friendMgmtValidation.setDescription(FRIENDMANAGEMENT_EMAIL_SAME);
 			return friendMgmtValidation;
 		}
-		friendMgmtValidation.setStatus("Success");
-		friendMgmtValidation.setDescription("Subscribed successfully");
-		boolean isBlocked = isBlocked(requestor, target);
+		friendMgmtValidation.setStatus(FRIENDMANAGEMENT_SUCCESS);
+		friendMgmtValidation.setDescription(FRIENDMANAGEMENT_SUCCESSFULLY_SUBSCRIBED);
+		boolean isBlocked = friendManagementHelper.isBlocked(requestor, target);
 		if (!isBlocked) {
 			if (emails.contains(target) && emails.contains(requestor)) {
-				String subscribers = getSubscriptionList(requestor);
-				String targetId = getId(target);
+				String subscribers = friendManagementHelper.getSubscriptionList(requestor);
+				String targetId = friendManagementHelper.getId(target);
 				if (subscribers.isEmpty()) {
-					updateQueryForSubscriber(targetId, requestor);
+					friendManagementHelper.updateQueryForSubscriber(targetId, requestor);
 
-					updateSubscribedBy(requestor, target);
+					friendManagementHelper.updateSubscribedBy(requestor, target);
 
 				} else {
 					String[] subs = subscribers.split(",");
@@ -206,30 +217,30 @@ public class FriendMangmtRepo {
 
 					if (!al.contains(targetId)) {
 						targetId = subscribers + "," + targetId;
-						updateQueryForSubscriber(targetId, requestor);
+						friendManagementHelper.updateQueryForSubscriber(targetId, requestor);
 
-						updateSubscribedBy(requestor, target);
+						friendManagementHelper.updateSubscribedBy(requestor, target);
 
 					} else {
-						friendMgmtValidation.setStatus("Failed");
-						friendMgmtValidation.setDescription("Target already subscribed");
+						friendMgmtValidation.setStatus(FRIENDMANAGEMENT_FAILED);
+						friendMgmtValidation.setDescription(FRIENDMANAGEMENT_TARGET_SUBSCRIBED);
 					}
 				}
 
 			} else {
-				friendMgmtValidation.setStatus("Failed");
-				friendMgmtValidation.setDescription("Check Target or Requestor email id");
+				friendMgmtValidation.setStatus(FRIENDMANAGEMENT_FAILED);
+				friendMgmtValidation.setDescription(FRIENDMANAGEMENT_CHECK_EMAIL);
 			}
 		}else {
-			friendMgmtValidation.setStatus("Failed");
-			friendMgmtValidation.setDescription("target blocked");
+			friendMgmtValidation.setStatus(FRIENDMANAGEMENT_FAILED);
+			friendMgmtValidation.setDescription(FRIENDMANAGEMENT_TARGET_BLOCKED);
 		}
 		return friendMgmtValidation;
 	}
 
 
 	/**
-	 * This API is invoked to retrive all email address that can receive updates from an email address
+	 * This API is invoked to retrieve all email address that can receive updates from an email address
 	 * @param emailsList
 	 * @return
 	 */
@@ -237,8 +248,7 @@ public class FriendMangmtRepo {
 
 		EmailsListRecievesUpdatesResponse  EmailsList = new EmailsListRecievesUpdatesResponse();
 
-		String query = "SELECT email FROM friendmanagement";
-		List<String> emails = jdbcTemplate.queryForList(query, String.class);
+		List<String> emails = friendManagementHelper.getListOfAllEmails(); 
 		String sender = emailsList.getSender();
 		String text = emailsList.getText();
 		text = text.trim();
@@ -246,28 +256,39 @@ public class FriendMangmtRepo {
 
 		if(emails.contains(sender)) {
 			if(emails.contains(reciever)) {
-				String recieverId = getId(reciever);
-				updateQueryForUpdated(recieverId, sender);
+				String recieverId = friendManagementHelper.getId(reciever);
+				friendManagementHelper.updateQueryForUpdated(recieverId, sender);
 			}else {
-				insertEmail(reciever);
-				String recieverId = getId(reciever);
-				updateQueryForUpdated(recieverId, sender);
+				friendManagementHelper.insertEmail(reciever);
+				String recieverId = friendManagementHelper.getId(reciever);
+				friendManagementHelper.updateQueryForUpdated(recieverId, sender);
 			}
 
 
-			String friendList = getFriendList(sender);
+			String friendList = friendManagementHelper.getFriendList(sender);
 			String[] senderFriends = friendList.split(",");
 
-			String subscribedBy = getSubscribedByList(sender);
+			String subscribedBy = friendManagementHelper.getSubscribedByList(sender);
 			String[] subscribedFriends = subscribedBy.split(",");
-
-
+			
 			Set<String> set = new HashSet<String>();
+			if(senderFriends[0].equals("") && subscribedFriends[0].equals("")) {
+
+			}else if(senderFriends[0].equals("")) {
+				set.addAll(Arrays.asList(subscribedFriends));
+			}else if(subscribedFriends[0].equals("")){
+				set.addAll(Arrays.asList(senderFriends));
+			}else {
+				set.addAll(Arrays.asList(senderFriends));
+				set.addAll(Arrays.asList(subscribedFriends));
+			}
+
+			
 			set.addAll(Arrays.asList(senderFriends));
 			set.addAll(Arrays.asList(subscribedFriends));
 			List<String> emailsUnion = new ArrayList<String>(set);
 
-			List<String> commonEmails = getEmailByIds(emailsUnion);
+			List<String> commonEmails = friendManagementHelper.getEmailByIds(emailsUnion);
 
 
 			if(!commonEmails.contains(reciever)) {
@@ -275,12 +296,12 @@ public class FriendMangmtRepo {
 			}
 
 
-			EmailsList.setStatus("Success");
+			EmailsList.setStatus(FRIENDMANAGEMENT_SUCCESS);
 			for(String email:commonEmails) {
 				EmailsList.getFriends().add(email);
 			}
 		}else {
-			EmailsList.setStatus("Failed");
+			EmailsList.setStatus(FRIENDMANAGEMENT_FAILED);
 		}
 		return EmailsList;
 	}
@@ -296,21 +317,20 @@ public class FriendMangmtRepo {
 		String requestor = subscriber.getRequestor();
 		String target = subscriber.getTarget();
 
-		String query = "SELECT email FROM friendmanagement";
-		List<String> emails = jdbcTemplate.queryForList(query, String.class);
+		List<String> emails = friendManagementHelper.getListOfAllEmails(); 
 
 		if(emails.contains(requestor) && emails.contains(target)) {
 			String sql = "SELECT subscriber FROM friendmanagement WHERE email=?";
 			String subscribers = (String) jdbcTemplate.queryForObject(
 					sql, new Object[] { requestor }, String.class);
 			if(subscribers == null || subscribers.isEmpty()) {
-				friendMgmtValidation.setStatus("Failed");
-				friendMgmtValidation.setDescription("Requestor does not subscribe to any email");
+				friendMgmtValidation.setStatus(FRIENDMANAGEMENT_FAILED);
+				friendMgmtValidation.setDescription(FRIENDMANAGEMENT_REQUESTOR_NOT_SUBSCRIBED);
 			}else {
 //				unsubscribeTarget(email);
 				String[] subs = subscribers.split(",");
 				ArrayList<String> subscriberList = new ArrayList<>(Arrays.asList(subs));
-				String targetId = getId(target);
+				String targetId = friendManagementHelper.getId(target);
 				if(subscriberList.contains(targetId)) {
 					StringJoiner sjTarget = new StringJoiner(",");
 					for(String sub:subscriberList) {
@@ -318,15 +338,15 @@ public class FriendMangmtRepo {
 							sjTarget.add(sub);
 						}
 					}
-					updateQueryForSubscriber(sjTarget.toString(),requestor);
+					friendManagementHelper.updateQueryForSubscriber(sjTarget.toString(),requestor);
 					
-					//This section is used to remove requestor id from subscribedBy column
+					//This section is used to remove requester id from subscribedBy column
 					String sqlQuery = "SELECT subscribedBy FROM friendmanagement WHERE email=?";
 					String subscribedBys = (String) jdbcTemplate.queryForObject(
 							sqlQuery, new Object[] { target }, String.class);
 					String[] subscribedBy = subscribedBys.split(",");
 					ArrayList<String> subscribedByList = new ArrayList<>(Arrays.asList(subscribedBy));
-					String requestorId = getId(requestor);
+					String requestorId = friendManagementHelper.getId(requestor);
 					if(subscribedByList.contains(requestorId)) {
 						StringJoiner sjRequestor = new StringJoiner(",");
 						for(String sub:subscribedByList) {
@@ -334,221 +354,27 @@ public class FriendMangmtRepo {
 								sjRequestor.add(sub);
 							}
 						}
-						updateQueryForSubscribedBy(sjRequestor.toString(),target);
+						friendManagementHelper.updateQueryForSubscribedBy(sjRequestor.toString(),target);
 					}
 					
-					updateUnsubscribeTable(requestor, target, "Blocked");
+					friendManagementHelper.updateUnsubscribeTable(requestor, target, FRIENDMANAGEMENT_BLOCKED);
 					
-					friendMgmtValidation.setStatus("Success");
-					friendMgmtValidation.setDescription("Unsubscribed successfully");
+					friendMgmtValidation.setStatus(FRIENDMANAGEMENT_SUCCESS);
+					friendMgmtValidation.setDescription(FRIENDMANAGEMENT_SUCCESSFULLY_UNSUBSCRIBED);
 				}else {
-					friendMgmtValidation.setStatus("Failed");
-					friendMgmtValidation.setDescription("No Target available");
+					friendMgmtValidation.setStatus(FRIENDMANAGEMENT_FAILED);
+					friendMgmtValidation.setDescription(FRIENDMANAGEMENT_NO_TARGET);
 				}
 			}
 		}else{
-			friendMgmtValidation.setStatus("Failed");
-			friendMgmtValidation.setDescription("Please provide valid Requestor and Target email");
+			friendMgmtValidation.setStatus(FRIENDMANAGEMENT_FAILED);
+			friendMgmtValidation.setDescription(FRIENDMANAGEMENT_INVALID_EMAIL);
 		}
 		return friendMgmtValidation;
 	}
 
 
-	/**
-	 * This method is invoked to insert new record in a friendmanagement table
-	 * @param email
-	 * @return
-	 */
-	private int insertEmail(String email) {
-		return jdbcTemplate.update("insert into friendmanagement(email, friend_list, subscriber, subscribedBy, updated, updated_timestamp) values(?,?,?,?,?,?)",
-				new Object[] { email,"" , "", "", "", 
-						new Timestamp((new Date()).getTime()) });
-	} 
+	
 
-
-	/**
-	 * This method is used to get the all the email by ID
-	 * @param friendListQueryParam
-	 * @return
-	 */
-	private List<String> getEmailByIds(List<String> friendListQueryParam){
-
-		StringJoiner email_Ids = new StringJoiner(",", "SELECT email FROM friendmanagement WHERE id in (", ")");
-
-		for (String friendId : friendListQueryParam) {
-			email_Ids.add(friendId);
-		}
-		String query = email_Ids.toString();
-		return (List<String>) jdbcTemplate.queryForList(query, new Object[] {}, String.class);
-	} 
-
-
-
-	/**
-	 * This method is used to get all the subscriber for an email
-	 * @param email
-	 * @return
-	 */
-	private String getSubscriptionList(String email) {
-		String sqlrFriendList = "SELECT subscriber FROM friendmanagement WHERE email=?";
-		String friendList = (String) jdbcTemplate.queryForObject(sqlrFriendList, new Object[] { email }, String.class);
-		return friendList;
-	}
-
-
-	/**
-	 * This method is used to get the subscribedBy Ids for a particular email
-	 * @param email
-	 * @return
-	 */
-	private String getSubscribedByList(String email) {
-		String sqlrFriendList = "SELECT subscribedBy FROM friendmanagement WHERE email=?";
-		String friendList = (String) jdbcTemplate.queryForObject(sqlrFriendList, new Object[] { email }, String.class);
-		return friendList;
-	}
-
-
-	/**
-	 * This method is invoked to connect friend
-	 * 
-	 * @param firstEmail
-	 * @param secondEmail
-	 */
-	private void connectFriend(String firstEmail, String secondEmail) {
-		String requestorId = getId(firstEmail);
-		String friendList = getFriendList(secondEmail);
-
-		friendList = friendList.isEmpty() ? requestorId : friendList + "," + requestorId;
-
-		jdbcTemplate.update("update friendmanagement " + " set friend_list = ?" + " where email = ?",
-				new Object[] { friendList, secondEmail });
-	}
-
-	/**
-	 * This method is invoked to check whether the friend is already connected
-	 * 
-	 * @param requestor
-	 * @param target
-	 * @return
-	 */
-	private boolean isAlreadyFriend(String requestor, String target) {
-		boolean alreadyFriend = false;
-
-		String requestorId = getId(requestor);
-		String targetId = getId(target);
-
-		String requestorFriendList = getFriendList(requestor);
-		String[] requestorFriends = requestorFriendList.split(",");
-
-		String targetFirendList = getFriendList(target);
-		String[] targetFriends = targetFirendList.split(",");
-
-		if (Arrays.asList(requestorFriends).contains(targetId) && Arrays.asList(targetFriends).contains(requestorId)) {
-			alreadyFriend = true;
-		}
-		LOG.info("alreadyFriend " + alreadyFriend);
-		return alreadyFriend;
-
-	}
-
-	/**
-	 * this method is invoked to get Id of particular email
-	 * 
-	 * @param email
-	 * @return
-	 */
-	private String getId(String email) {
-		String sql = "SELECT id FROM friendmanagement WHERE email=?";
-		String requestorId = (String) jdbcTemplate.queryForObject(sql, new Object[] { email }, String.class);
-		return requestorId;
-	}
-
-	/**
-	 * This method is invoked to get the list of friends
-	 * 
-	 * @param email
-	 * @return
-	 */
-	private String getFriendList(String email) {
-		String sqlrFriendList = "SELECT friend_list FROM friendmanagement WHERE email=?";
-		String friendList = (String) jdbcTemplate.queryForObject(sqlrFriendList, new Object[] { email }, String.class);
-		return friendList;
-
-	}
-
-	/**
-	 * This method is invoked to check whether the target is blocked or not
-	 * 
-	 * @param requestor_email
-	 * @param target_email
-	 * @return
-	 */
-	private boolean isBlocked(String requestor_email, String target_email) {
-		boolean status = false;
-		try {
-			String sqlrFriendList = "SELECT Subscription_Status FROM unsubscribe WHERE Requestor_email=? AND Target_email=?";
-			String Subscription_Status = (String) jdbcTemplate.queryForObject(sqlrFriendList,
-					new Object[] { requestor_email, target_email }, String.class);
-			LOG.info("Subscription_Status " + Subscription_Status);
-			if (Subscription_Status.equalsIgnoreCase("Blocked")) {
-				status = true;
-			}
-		} catch (Exception e) {
-
-		}
-		return status;
-	}
-
-
-
-
-
-
-
-	private void updateUnsubscribeTable(String requestor, String target,String status) {
-		jdbcTemplate.update("insert into UNSUBSCRIBE(Requestor_email, Target_email, Subscription_Status) values(?, ?, ?)",
-				new Object[] { requestor, target, status });
-	}
-
-
-	/**
-	 * This method is used to update the subscribedBy column
-	 * @param requestor
-	 * @param target
-	 */
-	private void updateSubscribedBy(String requestor, String target) {
-		String requestorId = getId(requestor);
-		String subscribedList = getSubscribedByList(target);
-		if (subscribedList.isEmpty()) {
-			updateQueryForSubscribedBy(requestorId, target);
-		}else {
-			String[] subscr = subscribedList.split(",");
-			ArrayList<String> subscrList = new ArrayList<String>(Arrays.asList(subscr));
-
-			if (!subscrList.contains(requestorId)) {
-				requestorId = subscribedList + "," + requestorId;
-				updateQueryForSubscribedBy(requestorId, target);
-			}
-		}
-	}
-
-
-	private void updateQueryForSubscriber(String targetId, String requestor) {
-		jdbcTemplate.update(
-				"update friendmanagement " + " set subscriber = ? " + " where email = ?",
-				new Object[] { targetId, requestor });
-	}
-
-	private void updateQueryForSubscribedBy(String requestorId, String target) {
-		jdbcTemplate.update(
-				"update friendmanagement " + " set subscribedBy = ? " + " where email = ?",
-				new Object[] { requestorId, target });
-	}
-
-	private void updateQueryForUpdated(String recieverId, String sender) {
-		jdbcTemplate.update(
-				"update friendmanagement " + " set updated = ? " + " where email = ?",
-				new Object[] { recieverId, sender });
-	}
 
 }
